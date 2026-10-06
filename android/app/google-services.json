@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "724467611537",
+    "firebase_url": "https://ajay-payment-app-default-rtdb.firebaseio.com",
+    "project_id": "ajay-payment-app",
+    "storage_bucket": "ajay-payment-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:724467611537:android:3de67c8165d9b517618c30",
+        "android_client_info": {
+          "package_name": "com.example.payment_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMQX7j-NJStCPLI9mhBsqRPkCCWcf8PQg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

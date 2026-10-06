@@ -1,0 +1,21 @@
+{
+  "@@locale": "en",
+  "welcome": "Welcome to ECpay!",
+  "loginSubtitle": "Login to continue making payments",
+  "email": "Email",
+  "password": "Password",
+  "forgotPassword": "Forgot Password?",
+  "login": "Login",
+  "register": "Register",
+  "noAccount": "Don't have an account?",
+  "yourBalance": "Your Balance",
+  "quickActions": "Quick Actions",
+  "send": "Send",
+  "scan": "Scan",
+  "history": "History",
+  "sendMoney": "Send Money",
+  "recentTransactions": "Recent Transactions",
+  "home": "Home",
+  "profile": "Profile",
+  "selectLanguage": "Select Language"
+}

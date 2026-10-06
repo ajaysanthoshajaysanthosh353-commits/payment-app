@@ -1,0 +1,21 @@
+{
+  "@@locale": "ml",
+  "welcome": "ECpay-ലേക്ക് സ്വാഗതം!",
+  "loginSubtitle": "പേയ്‌മെന്റുകൾ തുടരാൻ ലോഗിൻ ചെയ്യുക",
+  "email": "ഇമെയിൽ",
+  "password": "പാസ്‌വേഡ്",
+  "forgotPassword": "പാസ്‌വേഡ് മറന്നോ?",
+  "login": "ലോഗിൻ",
+  "register": "രജിസ്റ്റർ ചെയ്യുക",
+  "noAccount": "അക്കൗണ്ട് ഇല്ലേ?",
+  "yourBalance": "നിങ്ങളുടെ ബാലൻസ്",
+  "quickActions": "ദ്രുത പ്രവർത്തനങ്ങൾ",
+  "send": "അയയ്ക്കുക",
+  "scan": "സ്കാൻ",
+  "history": "ചരിത്രം",
+  "sendMoney": "പണം അയയ്ക്കുക",
+  "recentTransactions": "സമീപകാല ഇടപാടുകൾ",
+  "home": "ഹോം",
+  "profile": "പ്രൊഫൈൽ",
+  "selectLanguage": "ഭാഷ തിരഞ്ഞെടുക്കുക"
+}
