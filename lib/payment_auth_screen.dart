@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'paymentsuccess_screen.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 // ============================================================
 // ECpay - Dark Neumorphic Theme
 // ============================================================
@@ -183,19 +183,19 @@ class _PaymentAuthScreenState extends State<PaymentAuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackground,
+      backgroundColor: const Color.fromARGB(255, 45, 240, 120),
 
       // ======================================================
       // App Bar
       // ======================================================
 
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Authorize Payment",
-          style: TextStyle(
-            color: kWhite,
+          style: GoogleFonts.oswald(
             fontSize: 22,
             fontWeight: FontWeight.w800,
+            color: kWhite,
           ),
         ),
         centerTitle: true,
@@ -258,6 +258,7 @@ class _PaymentAuthScreenState extends State<PaymentAuthScreen> {
                 "Authorize Payment",
                 textAlign: TextAlign.center,
                 style: TextStyle(
+                  
                   color: kWhite,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
@@ -342,10 +343,12 @@ class _PaymentAuthScreenState extends State<PaymentAuthScreen> {
                     Expanded(
                       child: Text(
                         "Your payment is securely processed through ECpay.",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           color: kTextGrey,
                           fontSize: 12,
                           height: 1.4,
+                          letterSpacing: 2.2,
                         ),
                       ),
                     ),
@@ -420,9 +423,9 @@ class _PaymentAuthScreenState extends State<PaymentAuthScreen> {
                 "🔒 Secure payment authorization",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: kTextGrey,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  color:Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w300,
                 ),
               ),
 

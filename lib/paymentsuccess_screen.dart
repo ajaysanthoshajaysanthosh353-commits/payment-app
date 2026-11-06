@@ -6,9 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 // ECpay COLORS
 // ============================================================
 
-const Color kBackground = Color.fromARGB(255, 11, 95, 39);
+const Color kBackground = Color.fromARGB(255, 26, 179, 77);
 const Color kDark = Color.fromARGB(255, 0, 0, 0);
-const Color kSurface = Color.fromARGB(148, 5, 230, 155);
+const Color kSurface = Color.fromARGB(134, 26, 197, 69);
 const Color kLightSurface = Color.fromARGB(255, 0, 0, 0);
 const Color kWhite = Color(0xFFF7F7F7);
 const Color kTextGrey = Color(0xFF92959A);
@@ -297,7 +297,7 @@ class PaymentsuccessScreen extends StatelessWidget {
       // ========================================================
 
       appBar: AppBar(
-        backgroundColor: kBackground,
+        backgroundColor: Colors.black,
         foregroundColor: kWhite,
         elevation: 0,
         centerTitle: true,

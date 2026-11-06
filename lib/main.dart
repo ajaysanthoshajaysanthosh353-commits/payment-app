@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,22 +10,31 @@ import 'history_screen.dart';
 import 'profile_screen.dart';
 import 'send_money_screen.dart';
 import 'qr_scanner_screen.dart';
-import 'language_screen.dart';
 import 'locale_controller.dart';
-
-
-
+import 'link_bank_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/cupertino.dart';
 
 // ============================================================
-// ECPAY COLORS
+// ECPAY COLORS (new palette)
 // ============================================================
 
-const Color kBackground = Color.fromRGBO(13, 233, 112, 0.815);
-const Color kDark = Color(0xFF000000);
-const Color kSurface = Color.fromRGBO(17, 90, 53, 1);
-const Color kLightSurface = Color.fromARGB(255, 255, 238, 238);
-const Color kWhite = Color.fromARGB(255, 236, 255, 250);
-const Color kTextGrey = Color.fromARGB(255, 206, 197, 197);
+const Color kPrimary = Color.fromARGB(211, 92, 253, 92);
+const Color kPrimaryLight = Color.fromARGB(255, 11, 24, 19);
+const Color kBg = Color.fromARGB(255, 41, 167, 34);
+const Color kCard = Color.fromARGB(255, 0, 0, 0);
+const Color kTextDark = Color.fromARGB(255, 216, 212, 212);
+const Color kTextSecondary = Color.fromARGB(255, 7, 107, 32);
+const Color kSuccess = Color.fromARGB(255, 193, 207, 198);
+const Color kError = Color(0xFFDC2626);
+
+// Aliases so the other screens (history, profile, send money...) keep working
+const Color kBackground = Color.fromARGB(255, 30, 88, 13);
+const Color kDark = Color.fromARGB(255, 4, 13, 39);
+const Color kSurface = Color.fromARGB(255, 2, 19, 7);
+const Color kLightSurface = kPrimaryLight;
+const Color kWhite = kPrimary;
+const Color kTextGrey = kTextSecondary;
 
 // ============================================================
 // DARK MODE NOTIFIER
@@ -33,25 +43,18 @@ const Color kTextGrey = Color.fromARGB(255, 206, 197, 197);
 final ValueNotifier<bool> darkModeNotifier = ValueNotifier<bool>(false);
 
 // ============================================================
-// NEUMORPHIC DECORATION
+// CARD DECORATION
 // ============================================================
+
+const List<BoxShadow> kSoftShadow = [
+  BoxShadow(color: Color(0x140F172A), blurRadius: 14, offset: Offset(0, 4)),
+];
 
 BoxDecoration neumorphicDecoration({double radius = 20}) {
   return BoxDecoration(
-    color: kSurface,
+    color: kCard,
     borderRadius: BorderRadius.circular(radius),
-    boxShadow: const [
-      BoxShadow(
-        color: Colors.black87,
-        blurRadius: 15,
-        offset: Offset(7, 7),
-      ),
-      BoxShadow(
-        color: Colors.white10,
-        blurRadius: 12,
-        offset: Offset(-5, -5),
-      ),
-    ],
+    boxShadow: kSoftShadow,
   );
 }
 
@@ -66,30 +69,45 @@ InputDecoration appInput({
 }) {
   return InputDecoration(
     labelText: label,
-    labelStyle: const TextStyle(color: kTextGrey, fontSize: 13),
+    labelStyle: const TextStyle(color: kTextSecondary, fontSize: 13),
     floatingLabelStyle: const TextStyle(
-      color: kWhite,
+      color: kPrimary,
       fontSize: 13,
       fontWeight: FontWeight.w600,
     ),
-    prefixIcon: Icon(icon, color: kTextGrey, size: 18),
+    prefixIcon: Icon(icon, color: kTextSecondary, size: 18),
     suffixIcon: suffixIcon,
     filled: true,
-    fillColor: kDark,
+    fillColor: kCard,
     contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide.none,
+      borderSide: const BorderSide(color: kPrimaryLight),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide.none,
+      borderSide: const BorderSide(color: kPrimaryLight),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Colors.white, width: 1.3),
+      borderSide: const BorderSide(color: kPrimary, width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: kError),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: kError, width: 1.5),
     ),
   );
+}
+
+bool get firebaseSupportedPlatform {
+  return kIsWeb ||
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.macOS;
 }
 
 // ============================================================
@@ -99,9 +117,11 @@ InputDecoration appInput({
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  if (firebaseSupportedPlatform) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
 
   await loadSavedLocale();
 
@@ -137,25 +157,27 @@ class PaymentApp extends StatelessWidget {
                 Locale('ml', 'IN'),
               ],
               debugShowCheckedModeBanner: false,
-              title: 'ECpay',
+              title: 'EcPay',
               theme: ThemeData(
                 useMaterial3: true,
-                scaffoldBackgroundColor: kBackground,
-                colorScheme: isDarkMode
-                    ? const ColorScheme.dark(
-                        surface: kBackground,
-                        primary: kWhite,
-                        secondary: kWhite,
-                      )
-                    : const ColorScheme.light(
-                        surface: kBackground,
-                        primary: kDark,
-                        secondary: kDark,
-                      ),
-                appBarTheme: AppBarTheme(
-                  backgroundColor: isDarkMode ? kDark : kWhite,
-                  foregroundColor: isDarkMode ? kWhite : kDark,
+                scaffoldBackgroundColor: kBg,
+                colorScheme: const ColorScheme.light(
+                  primary: kPrimary,
+                  onPrimary: Colors.white,
+                  secondary: kPrimaryLight,
+                  onSecondary: kTextDark,
+                  surface: kBg,
+                  onSurface: kTextDark,
+                  error: kError,
+                ),
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: kCard,
+                  foregroundColor: kPrimary,
                   elevation: 0,
+                  scrolledUnderElevation: 0,
+                ),
+                snackBarTheme: const SnackBarThemeData(
+                  contentTextStyle: TextStyle(color: Colors.white),
                 ),
               ),
               home: const AuthGate(),
@@ -176,15 +198,17 @@ class AuthGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!firebaseSupportedPlatform) {
+      return const UnsupportedPlatformScreen();
+    }
+
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            backgroundColor: kBackground,
-            body: Center(
-              child: CircularProgressIndicator(color: kWhite),
-            ),
+            backgroundColor: kBg,
+            body: Center(child: CircularProgressIndicator(color: kPrimary)),
           );
         }
 
@@ -194,6 +218,48 @@ class AuthGate extends StatelessWidget {
 
         return const LoginScreen();
       },
+    );
+  }
+}
+
+class UnsupportedPlatformScreen extends StatelessWidget {
+  const UnsupportedPlatformScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kBg,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.devices_other_rounded,
+                size: 64,
+                color: kPrimary,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'This app requires Firebase support.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: kTextDark,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Run the app on a supported mobile platform to enable login and payments.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: kTextSecondary, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -250,7 +316,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Login successful!'),
-          backgroundColor: kSurface,
+          backgroundColor: kSuccess,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -286,7 +352,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: kDark,
+          backgroundColor: kError,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -294,10 +360,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: kDark,
-        ),
+        SnackBar(content: Text('Error: $e'), backgroundColor: kError),
       );
     } finally {
       if (mounted) {
@@ -319,7 +382,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Enter your email first.'),
-          backgroundColor: kDark,
+          backgroundColor: kError,
         ),
       );
       return;
@@ -333,7 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Password reset email sent.'),
-          backgroundColor: kSurface,
+          backgroundColor: kSuccess,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -343,7 +406,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message ?? 'Unable to send reset email.'),
-          backgroundColor: kDark,
+          backgroundColor: kError,
         ),
       );
     }
@@ -356,45 +419,35 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            tooltip: 'Language',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LanguageScreen()),
-              );
-            },
-            icon: const Icon(Icons.language, color: kDark),
-          ),
-        ],
-      ),
+      backgroundColor: kBg,
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
             child: Column(
               children: [
-                // ECpay logo
+                // EcPay logo
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 25,
                     vertical: 12,
                   ),
                   decoration: neumorphicDecoration(radius: 20),
-                  child: const Text(
-                    'ECpay',
-                    style: TextStyle(
-                      color: kWhite,
+                  child: Text(
+                    'EcPay',
+                    style: GoogleFonts.aDLaMDisplay(
+                      color: kPrimary,
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
                     ),
                   ),
+                ),
+                const Icon(
+                  CupertinoIcons.paperplane_fill,
+                  color: Colors.black,
+                  size: 44,
                 ),
 
                 const SizedBox(height: 25),
@@ -404,42 +457,34 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(22, 25, 22, 20),
                   decoration: BoxDecoration(
-                    color: kSurface,
+                    color: kCard,
                     borderRadius: BorderRadius.circular(28),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black87,
-                        blurRadius: 20,
-                        offset: Offset(8, 8),
-                      ),
-                      BoxShadow(
-                        color: Colors.white10,
-                        blurRadius: 15,
-                        offset: Offset(-5, -5),
-                      ),
-                    ],
+                    boxShadow: kSoftShadow,
                   ),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
-                          'Welcome to ECpay!',
+                        Text(
+                          'Welcome to EcPay!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: kWhite,
+                          style: GoogleFonts.aboreto(
+                            color: kTextDark,
                             fontSize: 23,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
 
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 12),
 
-                        const Text(
+                        Text(
                           'Login to continue making payments',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: kTextGrey, fontSize: 12),
+                          style: GoogleFonts.nunitoSans(
+                            color: kTextSecondary,
+                            fontSize: 12,
+                          ),
                         ),
 
                         const SizedBox(height: 25),
@@ -449,7 +494,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
-                          style: const TextStyle(color: kWhite, fontSize: 14),
+                          style: const TextStyle(
+                            color: kTextDark,
+                            fontSize: 14,
+                          ),
                           validator: (value) {
                             final email = value?.trim() ?? '';
 
@@ -465,7 +513,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           decoration: appInput(
                             label: 'Email',
-                            icon: Icons.email_outlined,
+                            icon: CupertinoIcons.mail_solid,
                           ),
                         ),
 
@@ -479,7 +527,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           onFieldSubmitted: (_) {
                             loginUser();
                           },
-                          style: const TextStyle(color: kWhite, fontSize: 14),
+                          style: const TextStyle(
+                            color: kTextDark,
+                            fontSize: 14,
+                          ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your password';
@@ -493,7 +544,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           decoration: appInput(
                             label: 'Password',
-                            icon: Icons.lock_outline,
+                            icon: CupertinoIcons.lock_fill,
                             suffixIcon: IconButton(
                               onPressed: () {
                                 setState(() {
@@ -504,7 +555,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 obscurePassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: kTextGrey,
+                                color: kTextSecondary,
                                 size: 19,
                               ),
                             ),
@@ -516,10 +567,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: resetPassword,
-                            child: const Text(
+                            child: Text(
                               'Forgot Password?',
-                              style: TextStyle(
-                                color: kWhite,
+                              style: GoogleFonts.nunitoSans(
+                                color: kPrimary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -537,8 +588,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: ElevatedButton(
                               onPressed: isLoading ? null : loginUser,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: kWhite,
-                                foregroundColor: kDark,
+                                backgroundColor: kPrimary,
+                                foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
@@ -550,7 +601,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.5,
-                                        color: kDark,
+                                        color: Colors.white,
                                       ),
                                     )
                                   : const Text(
@@ -569,18 +620,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         // OR
                         const Row(
                           children: [
-                            Expanded(child: Divider(color: Colors.white24)),
+                            Expanded(child: Divider(color: kPrimaryLight)),
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: 10),
                               child: Text(
                                 'OR',
                                 style: TextStyle(
-                                  color: kTextGrey,
+                                  color: Colors.white,
                                   fontSize: 11,
                                 ),
                               ),
                             ),
-                            Expanded(child: Divider(color: Colors.white24)),
+                            Expanded(child: Divider(color: kPrimaryLight)),
                           ],
                         ),
 
@@ -590,9 +641,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               "Don't have an account?",
-                              style: TextStyle(color: kTextGrey, fontSize: 12),
+                              style: GoogleFonts.nunitoSans(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
                             ),
                             TextButton(
                               onPressed: () {
@@ -603,11 +657,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 );
                               },
-                              child: const Text(
+                              child: Text(
                                 'Register',
-                                style: TextStyle(
-                                  color: kWhite,
-                                  fontSize: 12,
+                                style: GoogleFonts.nunitoSans(
+                                  color: kPrimary,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -621,9 +675,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                const Text(
-                  'Secure payments with ECpay',
-                  style: TextStyle(color: kTextGrey, fontSize: 11),
+                Text(
+                  'Secure payments with EcPay',
+                  style: GoogleFonts.nunitoSans(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -688,21 +745,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final phone = phoneController.text.trim();
       final password = passwordController.text;
 
-      final credential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       final user = credential.user;
 
       if (user != null) {
         await user.updateDisplayName(name);
 
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .set({
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'uid': user.uid,
           'name': name,
           'email': email,
@@ -717,7 +768,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Account created successfully!'),
-          backgroundColor: kSurface,
+          backgroundColor: kSuccess,
         ),
       );
 
@@ -747,14 +798,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), backgroundColor: kDark),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message), backgroundColor: kError));
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: kDark),
+        SnackBar(content: Text('Error: $e'), backgroundColor: kError),
       );
     } finally {
       if (mounted) {
@@ -772,14 +823,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackground,
+      backgroundColor: kBg,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Create Account',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.nunitoSans(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: kDark,
-        foregroundColor: kWhite,
+        backgroundColor: kCard,
+        foregroundColor: kPrimary,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -789,13 +843,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Create your ECpay account',
+                Text(
+                  'Create your EcPay account',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: kWhite,
-                    fontSize: 24,
+                  style: GoogleFonts.nunitoSans(
                     fontWeight: FontWeight.bold,
+                    fontSize: 28,
                   ),
                 ),
 
@@ -806,7 +859,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: nameController,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
-                  style: const TextStyle(color: kWhite, fontSize: 14),
+                  style: GoogleFonts.nunitoSans(color: kTextDark, fontSize: 14),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter your name';
@@ -826,7 +879,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  style: const TextStyle(color: kWhite, fontSize: 14),
+                  style: GoogleFonts.nunitoSans(color: kTextDark, fontSize: 14),
                   validator: (value) {
                     final email = value?.trim() ?? '';
 
@@ -853,7 +906,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
-                  style: const TextStyle(color: kWhite, fontSize: 14),
+                  style: GoogleFonts.nunitoSans(color: kTextDark, fontSize: 14),
                   validator: (value) {
                     final phone = value?.trim() ?? '';
 
@@ -880,7 +933,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: passwordController,
                   obscureText: obscurePassword,
                   textInputAction: TextInputAction.next,
-                  style: const TextStyle(color: kWhite, fontSize: 14),
+                  style: GoogleFonts.nunitoSans(color: kTextDark, fontSize: 14),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter password';
@@ -905,7 +958,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         obscurePassword
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: kTextGrey,
+                        color: kTextSecondary,
                       ),
                     ),
                   ),
@@ -921,7 +974,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onFieldSubmitted: (_) {
                     registerUser();
                   },
-                  style: const TextStyle(color: kWhite, fontSize: 14),
+                  style: const TextStyle(color: kTextDark, fontSize: 14),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please confirm password';
@@ -946,7 +999,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         obscureConfirmPassword
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: kTextGrey,
+                        color: kTextSecondary,
                       ),
                     ),
                   ),
@@ -960,8 +1013,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: ElevatedButton(
                     onPressed: isLoading ? null : registerUser,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: kWhite,
-                      foregroundColor: kDark,
+                      backgroundColor: kPrimary,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -972,14 +1025,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              color: kDark,
+                              color: Colors.white,
                             ),
                           )
-                        : const Text(
+                        : Text(
                             'Create Account',
-                            style: TextStyle(
+                            style: GoogleFonts.nunitoSans(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
+                              color: Colors.black,
                             ),
                           ),
                   ),
@@ -991,20 +1045,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Already have an account?',
-                      style: TextStyle(color: kTextGrey, fontSize: 12),
+                      style: GoogleFonts.nunitoSans(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: const Text(
+                      child: Text(
                         'Login',
-                        style: TextStyle(
-                          color: kWhite,
+                        style: GoogleFonts.nunitoSans(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 18,
                         ),
                       ),
                     ),
@@ -1042,33 +1099,31 @@ class _RootScreenState extends State<RootScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackground,
-      body: IndexedStack(
-        index: selectedIndex,
-        children: pages,
-      ),
+      backgroundColor: kBg,
+      body: IndexedStack(index: selectedIndex, children: pages),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: kDark,
+        backgroundColor: kCard,
         currentIndex: selectedIndex,
         onTap: (index) {
           setState(() {
             selectedIndex = index;
           });
         },
-        selectedItemColor: kWhite,
-        unselectedItemColor: kTextGrey,
+        selectedItemColor: kPrimary,
+        unselectedItemColor: kTextSecondary,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
+            icon: Icon(CupertinoIcons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history_rounded),
+            icon: Icon(CupertinoIcons.time),
             label: 'History',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_rounded),
+            icon: Icon(CupertinoIcons.person),
+            activeIcon: Icon(CupertinoIcons.person_fill),
             label: 'Profile',
           ),
         ],
@@ -1089,10 +1144,7 @@ class HomePage extends StatelessWidget {
   }
 
   void openScreen(BuildContext context, Widget screen) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => screen),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
 
   @override
@@ -1100,29 +1152,45 @@ class HomePage extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: kBackground,
+      backgroundColor: kBg,
       appBar: AppBar(
-        backgroundColor: kDark,
-        foregroundColor: kWhite,
-        title: const Text(
-          'ECpay',
-          style: TextStyle(
-            color: kWhite,
-            fontWeight: FontWeight.bold,
-            fontSize: 23,
-          ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
+        ),
+        backgroundColor: kCard,
+        foregroundColor: kPrimary,
+
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/ecpay_icon.png',
+                width: 32,
+                height: 32,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  CupertinoIcons.paperplane_fill,
+                  color: kPrimary,
+                  size: 24,
+                ),
+              ),
+            ),
+            SizedBox(width: 8),
+            Text(
+              'EcPay',
+              style: GoogleFonts.aDLaMDisplay(
+                color: kPrimary,
+                fontWeight: FontWeight.bold,
+                fontSize: 23,
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            tooltip: 'Language',
-            onPressed: () => openScreen(context, const LanguageScreen()),
-            icon: const Icon(Icons.language),
-          ),
-          IconButton(
-            onPressed: logout,
-            icon: const Icon(Icons.logout_rounded),
-          ),
+          IconButton(onPressed: logout, icon: const Icon(Icons.logout_rounded)),
         ],
       ),
       body: SingleChildScrollView(
@@ -1134,8 +1202,8 @@ class HomePage extends StatelessWidget {
             Text(
               'Welcome ${user?.displayName ?? 'User'}!',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: kWhite,
+              style: GoogleFonts.abel(
+                color: kTextDark,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -1146,7 +1214,7 @@ class HomePage extends StatelessWidget {
             Text(
               user?.email ?? '',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: kTextGrey, fontSize: 13),
+              style: const TextStyle(color: kTextSecondary, fontSize: 13),
             ),
 
             const SizedBox(height: 25),
@@ -1154,19 +1222,29 @@ class HomePage extends StatelessWidget {
             // Balance
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: neumorphicDecoration(radius: 25),
+              decoration: BoxDecoration(
+                color: kPrimary,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x402563EB),
+                    blurRadius: 18,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+              ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Your Balance',
-                    style: TextStyle(color: kTextGrey, fontSize: 15),
+                    style: TextStyle(color: kPrimaryLight, fontSize: 15),
                   ),
                   SizedBox(height: 10),
                   Text(
-                    '₹1,250.00',
+                    '₹',
                     style: TextStyle(
-                      color: kWhite,
+                      color: Colors.white,
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1177,10 +1255,10 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            const Text(
+            Text(
               'Quick Actions',
               style: TextStyle(
-                color: kWhite,
+                color: kTextDark,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -1193,21 +1271,27 @@ class HomePage extends StatelessWidget {
               children: [
                 actionButton(
                   context,
-                  Icons.send_rounded,
+                  CupertinoIcons.paperplane_fill,
                   'Send',
                   const SendMoneyScreen(),
                 ),
                 actionButton(
                   context,
-                  Icons.qr_code_scanner_rounded,
+                  CupertinoIcons.qrcode,
                   'Scan',
                   const QrScannerScreen(),
                 ),
                 actionButton(
                   context,
-                  Icons.history_rounded,
+                  CupertinoIcons.clock_fill,
                   'History',
                   const HistoryScreen(),
+                ),
+                actionButton(
+                  context,
+                  CupertinoIcons.building_2_fill,
+                  'Bank',
+                  const LinkBankScreen(),
                 ),
               ],
             ),
@@ -1215,62 +1299,41 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 30),
 
             // Send Money
-            GestureDetector(
-              onTap: () {
-                openScreen(context, const SendMoneyScreen());
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 17),
-                decoration: neumorphicDecoration(radius: 18),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.send_rounded, color: kWhite),
-                    SizedBox(width: 10),
-                    Text(
-                      'Send Money',
-                      style: TextStyle(
-                        color: kWhite,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  openScreen(context, const SendMoneyScreen());
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 26,
+                    vertical: 11,
+                  ),
+                  decoration: BoxDecoration(
+                    color: kPrimary,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        CupertinoIcons.paperplane_fill,
+                        color: Colors.black,
+                        size: 16,
                       ),
-                    ),
-                  ],
+                      SizedBox(width: 8),
+                      Text(
+                        'Send Money',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // Recent transactions
-            const Text(
-              'Recent Transactions',
-              style: TextStyle(
-                color: kWhite,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            transactionTile(
-              Icons.person_rounded,
-              'Ajay Santhosh',
-              'Sent',
-              '-₹400',
-            ),
-            transactionTile(
-              Icons.person_rounded,
-              'Santhosh',
-              'Received',
-              '+₹500',
-            ),
-            transactionTile(
-              Icons.person_rounded,
-              'Ajay Santhosh',
-              'Sent',
-              '-₹400',
             ),
           ],
         ),
@@ -1290,24 +1353,24 @@ class HomePage extends StatelessWidget {
   ) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => screen),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
       },
       child: Column(
         children: [
           Container(
             width: 65,
             height: 65,
-            decoration: neumorphicDecoration(radius: 18),
-            child: Icon(icon, color: kWhite, size: 28),
+            decoration: BoxDecoration(
+              color: kPrimaryLight,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(icon, color: kPrimary, size: 28),
           ),
           const SizedBox(height: 8),
           Text(
             title,
             style: const TextStyle(
-              color: kWhite,
+              color: kTextDark,
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -1327,6 +1390,8 @@ class HomePage extends StatelessWidget {
     String type,
     String amount,
   ) {
+    final isReceived = amount.startsWith('+');
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -1336,8 +1401,11 @@ class HomePage extends StatelessWidget {
           Container(
             width: 45,
             height: 45,
-            decoration: neumorphicDecoration(radius: 14),
-            child: Icon(icon, color: kWhite),
+            decoration: BoxDecoration(
+              color: kPrimaryLight,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: kPrimary),
           ),
           const SizedBox(width: 13),
           Expanded(
@@ -1347,22 +1415,22 @@ class HomePage extends StatelessWidget {
                 Text(
                   name,
                   style: const TextStyle(
-                    color: kWhite,
+                    color: kTextDark,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   type,
-                  style: const TextStyle(color: kTextGrey, fontSize: 12),
+                  style: const TextStyle(color: kTextSecondary, fontSize: 12),
                 ),
               ],
             ),
           ),
           Text(
             amount,
-            style: const TextStyle(
-              color: kWhite,
+            style: TextStyle(
+              color: isReceived ? kSuccess : kError,
               fontSize: 15,
               fontWeight: FontWeight.bold,
             ),

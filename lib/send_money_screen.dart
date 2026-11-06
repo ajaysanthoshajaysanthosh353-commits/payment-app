@@ -1,9 +1,7 @@
-
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:payment_app/confirm_payment_screen.dart';
-
-final user = FirebaseAuth.instance.currentUser;
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
+import 'confirm_payment_screen.dart';
 
 class SendMoneyScreen extends StatefulWidget {
   const SendMoneyScreen({super.key});
@@ -13,545 +11,283 @@ class SendMoneyScreen extends StatefulWidget {
 }
 
 class _SendMoneyScreenState extends State<SendMoneyScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final searchController = TextEditingController();
+  final nameController = TextEditingController();
+  final mobileController = TextEditingController();
+  final amountController = TextEditingController();
 
-  final TextEditingController mobileController = TextEditingController();
-  final TextEditingController amountController = TextEditingController();
+  List<Contact> contacts = [];
+  List<Contact> filteredContacts = [];
 
-  // Modern dark charcoal colors
-  static const Color charcoal = Color.fromARGB(255, 8, 70, 32);
-  static const Color darkCharcoal = Color.fromARGB(255, 0, 192, 42);
-  static const Color softWhite = Color(0xFFF7F7F7);
-  static const Color textGrey = Color.fromARGB(255, 165, 240, 199);
+  bool loading = false;
+  bool permissionDenied = false;
 
   @override
-  void dispose() {
-    mobileController.dispose();
-    amountController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    loadContacts();
+  }
+
+  Future<void> loadContacts() async {
+    setState(() => loading = true);
+
+    try {
+      final allowed = await FlutterContacts.permissions.request(
+        PermissionType.read,
+      );
+
+      if (!mounted) return;
+
+      if (allowed != PermissionStatus.granted) {
+        setState(() => permissionDenied = true);
+        return;
+      }
+
+      final result = await FlutterContacts.getAll();
+
+      if (!mounted) return;
+
+      setState(() {
+        contacts = result;
+        filteredContacts = result;
+      });
+    } catch (e) {
+      debugPrint('Contact error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => loading = false);
+      }
+    }
+  }
+
+  void searchContacts(String query) {
+    final search = query.toLowerCase().trim();
+    final digits = query.replaceAll(RegExp(r'[^0-9]'), '');
+
+    setState(() {
+      filteredContacts = contacts.where((contact) {
+        final name = (contact.displayName ?? '').toLowerCase();
+
+        final phoneMatch = contact.phones.any((phone) {
+          final number = phone.number.replaceAll(RegExp(r'[^0-9]'), '');
+
+          return digits.isNotEmpty && number.contains(digits);
+        });
+
+        return name.contains(search) || phoneMatch;
+      }).toList();
+    });
+  }
+
+  void selectContact(Contact contact) {
+    if (contact.phones.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No phone number found')));
+      return;
+    }
+
+    setState(() {
+      nameController.text = contact.displayName ?? '';
+      mobileController.text = contact.phones.first.number;
+    });
+  }
+
+  void continuePayment() {
+    final name = nameController.text.trim();
+    final mobile = mobileController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final amount = amountController.text.trim();
+
+    final normalizedMobile = mobile.length > 10
+        ? mobile.substring(mobile.length - 10)
+        : mobile;
+
+    final parsedAmount = double.tryParse(amount);
+
+    if (name.isEmpty ||
+        !RegExp(r'^[6-9][0-9]{9}$').hasMatch(normalizedMobile) ||
+        parsedAmount == null ||
+        !parsedAmount.isFinite ||
+        parsedAmount <= 0 ||
+        parsedAmount != parsedAmount.roundToDouble()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter a valid recipient and whole-rupee amount'),
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ConfirmPaymentScreen(
+          personName: name,
+          mobileNumber: normalizedMobile,
+          amount: parsedAmount.toInt(),
+        ),
+      ),
+    );
+  }
+
+  Widget inputField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    TextInputType keyboard = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboard,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white54),
+        prefixIcon: Icon(icon, color: const Color(0xFF35D66F)),
+        filled: true,
+        fillColor: const Color(0xFF202820),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: charcoal,
-
-      // --------------------------------------------------
-      // APP BAR
-      // --------------------------------------------------
+      backgroundColor: const Color(0xFF101510),
       appBar: AppBar(
-        backgroundColor: darkCharcoal,
-        elevation: 0,
-        centerTitle: true,
-        toolbarHeight: 75,
-
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(28),
-            bottomRight: Radius.circular(28),
-          ),
-        ),
-
-        title: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 10,
-          ),
-
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 21, 22, 24),
-            borderRadius: BorderRadius.circular(18),
-
-            boxShadow: [
-              // Neumorphic dark shadow
-              const BoxShadow(
-                color: Colors.black,
-                blurRadius: 10,
-                offset: Offset(5, 5),
-              ),
-
-              // Soft light shadow
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(-4, -4),
-              ),
-            ],
-          ),
-
-          child: const Text(
-            "Send Payment",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w400,
-              color: Color.fromARGB(255, 255, 226, 226),
-              letterSpacing: 0.3,
-            ),
-          ),
-        ),
+        title: const Text('Send Money'),
+        backgroundColor: const Color(0xFF101510),
+        foregroundColor: Colors.white,
       ),
-
-      // --------------------------------------------------
-      // BODY
-      // --------------------------------------------------
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18),
-
-        child: Form(
-          key: _formKey,
-
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 10),
-
-              // --------------------------------------------------
-              // MAIN NEUMORPHIC CARD
-              // --------------------------------------------------
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-
-                decoration: BoxDecoration(
-                  color: charcoal,
-                  borderRadius: BorderRadius.circular(28),
-
-                  boxShadow: [
-                    // Bottom-right dark shadow
-                    const BoxShadow(
-                      color: Colors.black,
-                      blurRadius: 20,
-                      offset: Offset(8, 8),
-                    ),
-
-                    // Top-left light shadow
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.06),
-                      blurRadius: 20,
-                      offset: const Offset(-7, -7),
-                    ),
-                  ],
+              const Text(
+                'Find a person',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
+              const SizedBox(height: 16),
 
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              inputField(
+                controller: searchController,
+                hint: 'Search contacts',
+                icon: CupertinoIcons.search,
+              ),
 
-                  children: [
-                    // --------------------------------------------------
-                    // TITLE
-                    // --------------------------------------------------
-                    Row(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
+              const SizedBox(height: 16),
 
-                          decoration: BoxDecoration(
-                            color: charcoal,
-                            borderRadius: BorderRadius.circular(16),
+              inputField(
+                controller: nameController,
+                hint: 'Person name',
+                icon: CupertinoIcons.person,
+              ),
 
-                            boxShadow: [
-                              const BoxShadow(
-                                color: Colors.black,
-                                blurRadius: 10,
-                                offset: Offset(5, 5),
-                              ),
+              const SizedBox(height: 12),
 
-                              BoxShadow(
-                                color: Colors.white.withValues(
-                                  alpha: 0.06,
-                                ),
-                                blurRadius: 10,
-                                offset: const Offset(-4, -4),
-                              ),
-                            ],
-                          ),
+              inputField(
+                controller: mobileController,
+                hint: 'Mobile number',
+                icon: CupertinoIcons.phone,
+                keyboard: TextInputType.phone,
+              ),
 
-                          child: const Icon(
-                            Icons.send_rounded,
-                            color: Colors.white,
-                            size: 25,
-                          ),
+              const SizedBox(height: 12),
+
+              inputField(
+                controller: amountController,
+                hint: 'Amount in ₹',
+                icon: CupertinoIcons.money_dollar_circle,
+                keyboard: TextInputType.number,
+              ),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                'Phone Contacts',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Expanded(
+                child: loading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF35D66F),
                         ),
-
-                        const SizedBox(width: 16),
-
-                        const Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-
-                          children: [
-                            Text(
-                              "Send Money",
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-
-                            SizedBox(height: 5),
-
-                            Text(
-                              "Enter receiver details",
-                              style: TextStyle(
-                                color: textGrey,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
+                      )
+                    : permissionDenied
+                    ? Center(
+                        child: TextButton(
+                          onPressed: loadContacts,
+                          child: const Text('Allow contact access / Try again'),
                         ),
-                      ],
-                    ),
+                      )
+                    : ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: searchController,
+                        builder: (context, value, child) {
+                          return ListView.builder(
+                            itemCount: filteredContacts.length,
+                            itemBuilder: (context, index) {
+                              final contact = filteredContacts[index];
 
-                    const SizedBox(height: 35),
-
-                    // --------------------------------------------------
-                    // MOBILE NUMBER
-                    // --------------------------------------------------
-                    const Text(
-                      "Mobile Number",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Container(
-                      decoration: BoxDecoration(
-                        color: darkCharcoal,
-                        borderRadius: BorderRadius.circular(16),
-
-                        boxShadow: [
-                          // Inner-looking dark shadow
-                          const BoxShadow(
-                            color: Colors.black,
-                            blurRadius: 8,
-                            offset: Offset(4, 4),
-                          ),
-
-                          BoxShadow(
-                            color: Colors.white.withValues(
-                              alpha: 0.04,
-                            ),
-                            blurRadius: 8,
-                            offset: const Offset(-3, -3),
-                          ),
-                        ],
-                      ),
-
-                      child: TextFormField(
-                        controller: mobileController,
-                        keyboardType: TextInputType.phone,
-                        maxLength: 10,
-
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                        ),
-
-                        decoration: InputDecoration(
-                          counterText: "",
-
-                          hintText: "Enter 10-digit mobile number",
-
-                          hintStyle: const TextStyle(
-                            color: textGrey,
-                            fontSize: 14,
-                          ),
-
-                          prefixIcon: const Icon(
-                            Icons.phone_outlined,
-                            color: Colors.white,
-                          ),
-
-                          filled: true,
-                          fillColor: Colors.transparent,
-
-                          contentPadding:
-                              const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 15,
-                          ),
-
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(16),
-                            borderSide: const BorderSide(
-                              color: Colors.white,
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Please enter mobile number";
-                          }
-
-                          if (!RegExp(r'^[0-9]+$')
-                              .hasMatch(value)) {
-                            return "Only numbers are allowed";
-                          }
-
-                          if (value.length != 10) {
-                            return "Enter a valid 10-digit number";
-                          }
-
-                          return null;
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    // --------------------------------------------------
-                    // AMOUNT
-                    // --------------------------------------------------
-                    const Text(
-                      "Amount",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Container(
-                      decoration: BoxDecoration(
-                        color: darkCharcoal,
-                        borderRadius: BorderRadius.circular(16),
-
-                        boxShadow: [
-                          const BoxShadow(
-                            color: Colors.black,
-                            blurRadius: 8,
-                            offset: Offset(4, 4),
-                          ),
-
-                          BoxShadow(
-                            color: Colors.white.withValues(
-                              alpha: 0.04,
-                            ),
-                            blurRadius: 8,
-                            offset: const Offset(-3, -3),
-                          ),
-                        ],
-                      ),
-
-                      child: TextFormField(
-                        controller: amountController,
-
-                        keyboardType:
-                            const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                        ),
-
-                        decoration: InputDecoration(
-                          hintText: "Enter amount",
-
-                          hintStyle: const TextStyle(
-                            color: textGrey,
-                            fontSize: 14,
-                          ),
-
-                          prefixIcon: const Icon(
-                            Icons.currency_rupee,
-                            color: Colors.white,
-                          ),
-
-                          filled: true,
-                          fillColor: Colors.transparent,
-
-                          contentPadding:
-                              const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 15,
-                          ),
-
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(16),
-                            borderSide: const BorderSide(
-                              color: Colors.white,
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Please enter amount";
-                          }
-
-                          final amount =
-                              double.tryParse(value);
-
-                          if (amount == null) {
-                            return "Enter a valid amount";
-                          }
-
-                          if (amount <= 0) {
-                            return "Amount must be greater than 0";
-                          }
-
-                          return null;
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 35),
-
-                    // --------------------------------------------------
-                    // CONTINUE BUTTON
-                    // --------------------------------------------------
-                    Center(
-                      child: SizedBox(
-                        width: 230,
-                        height: 58,
-
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: softWhite,
-                            foregroundColor: darkCharcoal,
-
-                            elevation: 0,
-
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(18),
-                            ),
-
-                            padding:
-                                const EdgeInsets.symmetric(
-                              horizontal: 20,
-                            ),
-                          ),
-
-                          onPressed: () {
-                            if (_formKey.currentState!
-                                .validate()) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ConfirmPaymentScreen(
-                                    mobileNumber:
-                                        mobileController.text
-                                            .trim(),
-
-                                    amount:
-                                        amountController.text
-                                            .trim(),
+                              return ListTile(
+                                leading: const CircleAvatar(
+                                  backgroundColor: Color(0xFF263B2B),
+                                  child: Icon(
+                                    CupertinoIcons.person,
+                                    color: Color(0xFF35D66F),
                                   ),
                                 ),
-                              );
-                            }
-                          },
-
-                          child: const Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-
-                            children: [
-                              Text(
-                                "Continue",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: darkCharcoal,
+                                title: Text(
+                                  contact.displayName ?? 'Unnamed contact',
+                                  style: const TextStyle(color: Colors.white),
                                 ),
-                              ),
-
-                              SizedBox(width: 12),
-
-                              Icon(
-                                Icons.arrow_forward_rounded,
-                                color: darkCharcoal,
-                                size: 23,
-                              ),
-                            ],
-                          ),
-                        ),
+                                subtitle: Text(
+                                  contact.phones.isNotEmpty
+                                      ? contact.phones.first.number
+                                      : 'No phone number',
+                                  style: const TextStyle(color: Colors.white60),
+                                ),
+                                onTap: () => selectContact(contact),
+                              );
+                            },
+                          );
+                        },
                       ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // --------------------------------------------------
-                    // SECURITY TEXT
-                    // --------------------------------------------------
-                    Center(
-                      child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.center,
-
-                        children: const [
-                          Icon(
-                            Icons.lock_outline,
-                            size: 15,
-                            color: textGrey,
-                          ),
-
-                          SizedBox(width: 6),
-
-                          Text(
-                            "Secure payment",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: textGrey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
               ),
 
-              const SizedBox(height: 25),
-
-              // Bottom information
-              const Text(
-                "ECpay • Fast & Secure Payments",
-                style: TextStyle(
-                  color: textGrey,
-                  fontSize: 12,
-                  letterSpacing: 0.4,
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: continuePayment,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF35D66F),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
               ),
             ],
@@ -561,4 +297,12 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    searchController.dispose();
+    nameController.dispose();
+    mobileController.dispose();
+    amountController.dispose();
+    super.dispose();
+  }
 }

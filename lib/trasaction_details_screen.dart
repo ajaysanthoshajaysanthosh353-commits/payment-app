@@ -1,27 +1,20 @@
-
 import 'package:flutter/material.dart';
 
 // ============================================================
 // ECPAY COLORS
 // ============================================================
 
-const Color kBackground =
-    Color.fromRGBO(13, 233, 112, 0.815);
+const Color kBackground = Color.fromRGBO(13, 233, 112, 0.815);
 
-const Color kDark =
-    Color(0xFF000000);
+const Color kDark = Color(0xFF000000);
 
-const Color kSurface =
-    Color.fromRGBO(17, 90, 53, 1);
+const Color kSurface = Color.fromRGBO(17, 90, 53, 1);
 
-const Color kLightSurface =
-    Color.fromARGB(255, 255, 238, 238);
+const Color kLightSurface = Color.fromARGB(255, 255, 238, 238);
 
-const Color kWhite =
-    Color.fromARGB(255, 236, 255, 250);
+const Color kWhite = Color.fromARGB(255, 236, 255, 250);
 
-const Color kTextGrey =
-    Color.fromARGB(255, 206, 197, 197);
+const Color kTextGrey = Color.fromARGB(255, 206, 197, 197);
 
 // ============================================================
 // TRANSACTION DETAILS SCREEN
@@ -47,11 +40,9 @@ class TransactionDetailsScreen extends StatelessWidget {
     // TRANSACTION ID
     // ==========================================================
 
-    final String transactionId =
-        'ECP${DateTime.now().millisecondsSinceEpoch}';
+    final String transactionId = 'ECP${DateTime.now().millisecondsSinceEpoch}';
 
-    final bool isSuccess =
-        status.toLowerCase() == 'success';
+    final bool isSuccess = status.toLowerCase() == 'success';
 
     return Scaffold(
       backgroundColor: kBackground,
@@ -59,14 +50,10 @@ class TransactionDetailsScreen extends StatelessWidget {
       // ========================================================
       // APP BAR
       // ========================================================
-
       appBar: AppBar(
         title: const Text(
           'Transaction Details',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: kWhite,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: kWhite),
         ),
         centerTitle: true,
 
@@ -86,13 +73,11 @@ class TransactionDetailsScreen extends StatelessWidget {
       // ========================================================
       // BODY
       // ========================================================
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
 
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
 
           children: [
             const SizedBox(height: 20),
@@ -100,16 +85,13 @@ class TransactionDetailsScreen extends StatelessWidget {
             // ==================================================
             // TRANSACTION ICON
             // ==================================================
-
             CircleAvatar(
               radius: 45,
 
               backgroundColor: kSurface,
 
               child: Icon(
-                isSuccess
-                    ? Icons.check_circle
-                    : Icons.payment,
+                isSuccess ? Icons.check_circle : Icons.payment,
 
                 size: 60,
 
@@ -122,23 +104,17 @@ class TransactionDetailsScreen extends StatelessWidget {
             // ==================================================
             // PAYMENT STATUS
             // ==================================================
-
             Text(
-              isSuccess
-                  ? 'Payment Successful'
-                  : 'Payment $status',
+              isSuccess ? 'Payment Successful' : 'Payment $status',
 
               textAlign: TextAlign.center,
 
               style: TextStyle(
                 fontSize: 24,
 
-                fontWeight:
-                    FontWeight.bold,
+                fontWeight: FontWeight.bold,
 
-                color: isSuccess
-                    ? kWhite
-                    : Colors.red[700],
+                color: isSuccess ? kWhite : Colors.red[700],
               ),
             ),
 
@@ -147,16 +123,13 @@ class TransactionDetailsScreen extends StatelessWidget {
             // ==================================================
             // DETAILS CARD
             // ==================================================
-
             Card(
               elevation: 5,
 
               color: kWhite,
 
-              shape:
-                  RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
               ),
 
               child: Column(
@@ -164,35 +137,28 @@ class TransactionDetailsScreen extends StatelessWidget {
                   // ============================================
                   // TRANSACTION ID
                   // ============================================
-
                   _detailRow(
                     icon: Icons.receipt_long,
                     title: 'Transaction ID',
                     value: transactionId,
                   ),
 
-                  const Divider(
-                    height: 1,
-                  ),
+                  const Divider(height: 1),
 
                   // ============================================
                   // RECEIVER
                   // ============================================
-
                   _detailRow(
                     icon: Icons.person,
                     title: 'Receiver',
                     value: receiver,
                   ),
 
-                  const Divider(
-                    height: 1,
-                  ),
+                  const Divider(height: 1),
 
                   // ============================================
                   // AMOUNT
                   // ============================================
-
                   _detailRow(
                     icon: Icons.currency_rupee,
                     title: 'Amount',
@@ -200,36 +166,24 @@ class TransactionDetailsScreen extends StatelessWidget {
                     valueBold: true,
                   ),
 
-                  const Divider(
-                    height: 1,
-                  ),
+                  const Divider(height: 1),
 
                   // ============================================
                   // STATUS
                   // ============================================
-
                   _detailRow(
-                    icon: isSuccess
-                        ? Icons.check_circle
-                        : Icons.cancel,
-                    iconColor: isSuccess
-                        ? kSurface
-                        : Colors.red,
+                    icon: isSuccess ? Icons.check_circle : Icons.cancel,
+                    iconColor: isSuccess ? kSurface : Colors.red,
                     title: 'Status',
                     value: status,
-                    valueColor: isSuccess
-                        ? kSurface
-                        : Colors.red,
+                    valueColor: isSuccess ? kSurface : Colors.red,
                   ),
 
-                  const Divider(
-                    height: 1,
-                  ),
+                  const Divider(height: 1),
 
                   // ============================================
                   // DATE
                   // ============================================
-
                   _detailRow(
                     icon: Icons.calendar_today,
                     title: 'Date',
@@ -244,7 +198,6 @@ class TransactionDetailsScreen extends StatelessWidget {
             // ==================================================
             // BACK BUTTON
             // ==================================================
-
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -254,32 +207,21 @@ class TransactionDetailsScreen extends StatelessWidget {
                   Navigator.pop(context);
                 },
 
-                icon: const Icon(
-                  Icons.arrow_back,
-                ),
+                icon: const Icon(Icons.arrow_back),
 
                 label: const Text(
                   'Back to History',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
 
-                style:
-                    ElevatedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
                   backgroundColor: kDark,
                   foregroundColor: kWhite,
 
                   elevation: 5,
 
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      12,
-                    ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
@@ -307,17 +249,9 @@ class TransactionDetailsScreen extends StatelessWidget {
     bool valueBold = false,
   }) {
     return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 6,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
 
-      leading: Icon(
-        icon,
-        color: iconColor,
-        size: 27,
-      ),
+      leading: Icon(icon, color: iconColor, size: 27),
 
       title: Text(
         title,
@@ -329,23 +263,17 @@ class TransactionDetailsScreen extends StatelessWidget {
       ),
 
       subtitle: Padding(
-        padding:
-            const EdgeInsets.only(
-          top: 4,
-        ),
+        padding: const EdgeInsets.only(top: 4),
 
         child: Text(
           value,
           style: TextStyle(
             color: valueColor,
             fontSize: 15,
-            fontWeight: valueBold
-                ? FontWeight.bold
-                : FontWeight.normal,
+            fontWeight: valueBold ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),
     );
   }
 }
-

@@ -1,6 +1,7 @@
 name: payment_app
-description: "A new Flutter project."
+description: "ECpay Flutter Payment Application"
 publish_to: 'none'
+
 version: 0.1.0+1
 
 environment:
@@ -9,18 +10,44 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+    
+  flutter_secure_storage: ^9.2.2
+  crypto: ^3.0.3
+
+  # UI and Fonts
+  cupertino_icons: ^1.0.8
+  google_fonts: ^8.0.0
+
+  # Localization
   flutter_localizations:
     sdk: flutter
 
+  # Firebase
   firebase_core: ^4.14.0
   firebase_auth: ^6.6.1
   cloud_firestore: ^6.0.0
   firebase_storage: ^13.6.0
+  cloud_functions: ^6.5.0
+  http: ^1.5.0
+
+  # QR Code Scanner
   mobile_scanner: ^7.1.1
-  image_picker: ^1.2.3
+
+  # Profile Image Picker
+  image_picker: ^1.2.4
+
+  # Local Storage
   shared_preferences: ^2.5.3
+
+  # File Handling
+  path_provider: ^2.1.6
+
+  # Share Receipts
+  share_plus: ^12.0.2
+
+  # Date and Currency Formatting
   intl: any
-  share_plus: ^13.3.1
+  flutter_contacts: ^2.6.0
 
 dev_dependencies:
   flutter_test:
@@ -28,6 +55,23 @@ dev_dependencies:
 
   flutter_lints: ^6.0.0
 
+  # App launcher icon generator
+  flutter_launcher_icons: ^0.14.4
+
+# ------------------------------------------------------------
+# App icon config (run: dart run flutter_launcher_icons)
+# Images needed:
+#   assets/ecpay_icon.png            -> square PNG, at least 1024x1024
+#   assets/icon/icon_foreground.png  -> logo on transparent background (Android adaptive)
+# If you have no foreground image, delete the two adaptive_icon_* lines.
+# ------------------------------------------------------------
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/ecpay_icon.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  remove_alpha_ios: true
+
 flutter:
   uses-material-design: true
-  generate: true

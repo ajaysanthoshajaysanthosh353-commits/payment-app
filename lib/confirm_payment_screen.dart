@@ -1,452 +1,190 @@
 import 'package:flutter/material.dart';
-import 'payment_auth_screen.dart';
-
-// ============================================================
-// ECpay Dark Neumorphic Theme
-// ============================================================
-
-const Color kBackground = Color.fromARGB(255, 47, 209, 109);
-const Color kDark = Color.fromRGBO(8, 8, 8, 1);
-const Color kSurface = Color.fromARGB(255, 11, 145, 138);
-const Color kWhite = Color(0xFFF7F7F7);
-const Color kTextGrey = Color(0xFF92959A);
-
-// ============================================================
-// Neumorphic Decoration
-// ============================================================
-
-BoxDecoration neumorphicDecoration({
-  double radius = 18,
-  bool pressed = false,
-}) {
-  return BoxDecoration(
-    color: pressed ? kDark : kSurface,
-    borderRadius: BorderRadius.circular(radius),
-    boxShadow: pressed
-        ? const [
-            BoxShadow(
-              color: Colors.black54,
-              offset: Offset(4, 4),
-              blurRadius: 8,
-            ),
-            BoxShadow(
-              color: Colors.white10,
-              offset: Offset(-2, -2),
-              blurRadius: 6,
-            ),
-          ]
-        : const [
-            BoxShadow(
-              color: Colors.black54,
-              offset: Offset(5, 5),
-              blurRadius: 10,
-            ),
-            BoxShadow(
-              color: Colors.white10,
-              offset: Offset(-3, -3),
-              blurRadius: 8,
-            ),
-          ],
-  );
-}
-
-// ============================================================
-// Confirm Payment Screen
-// ============================================================
 
 class ConfirmPaymentScreen extends StatelessWidget {
+  final String personName;
   final String mobileNumber;
-  final String amount;
+  final int amount;
 
   const ConfirmPaymentScreen({
     super.key,
+    required this.personName,
     required this.mobileNumber,
     required this.amount,
   });
 
-  // ==========================================================
-  // Receiver Card
-  // ==========================================================
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF101510),
 
-  Widget _receiverCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: neumorphicDecoration(
-        radius: 20,
+      appBar: AppBar(
+        title: const Text('Confirm Payment'),
+        backgroundColor: const Color(0xFF101510),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: neumorphicDecoration(
-              radius: 16,
-              pressed: true,
-            ),
-            child: const Icon(
-              Icons.person_outline_rounded,
-              color: kWhite,
-              size: 27,
-            ),
-          ),
 
-          const SizedBox(width: 14),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(24),
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Receiver",
-                  style: TextStyle(
-                    color: kTextGrey,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 30),
+
+              // Recipient Avatar
+              const CircleAvatar(
+                radius: 40,
+                backgroundColor: Color(0xFF263B2B),
+                child: Icon(Icons.person, size: 40, color: Color(0xFF35D66F)),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Recipient Name
+              Text(
+                personName,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              // Mobile Number
+              Text(
+                mobileNumber,
+                style: const TextStyle(color: Colors.white60, fontSize: 15),
+              ),
+
+              const SizedBox(height: 35),
+
+              const Text(
+                'Payment amount',
+                style: TextStyle(color: Colors.white60, fontSize: 16),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Amount
+              Text(
+                '₹$amount',
+                style: const TextStyle(
+                  color: Color(0xFF35D66F),
+                  fontSize: 38,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              // Payment Details Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF202820),
+                  borderRadius: BorderRadius.circular(16),
                 ),
 
-                const SizedBox(height: 5),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    detailRow('Recipient', personName),
 
-                Text(
-                  mobileNumber,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: kWhite,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
+                    const SizedBox(height: 14),
+
+                    detailRow('Mobile', mobileNumber),
+
+                    const SizedBox(height: 14),
+
+                    detailRow('Amount', '₹$amount'),
+
+                    const SizedBox(height: 14),
+
+                    detailRow('Payment provider', 'Cashfree'),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // Information
+              const Text(
+                'Review the recipient and amount before proceeding.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Proceed Button
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+
+                child: ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Payment backend approval and PIN verification are not connected yet.',
+                        ),
+                      ),
+                    );
+                  },
+
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF35D66F),
+                    foregroundColor: Colors.black,
+
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+
+                  child: const Text(
+                    'Proceed to verification',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
-              ],
-            ),
-          ),
+              ),
 
-          const SizedBox(width: 8),
-
-          Container(
-            width: 32,
-            height: 32,
-            decoration: neumorphicDecoration(
-              radius: 11,
-              pressed: true,
-            ),
-            child: const Icon(
-              Icons.check_rounded,
-              color: kWhite,
-              size: 19,
-            ),
+              const SizedBox(height: 20),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  // ==========================================================
-  // Build
-  // ==========================================================
+  // Payment Detail Row
+  Widget detailRow(String title, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text(title, style: const TextStyle(color: Colors.white60)),
+        ),
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kBackground,
+        const SizedBox(width: 12),
 
-      // ======================================================
-      // App Bar
-      // ======================================================
-
-      appBar: AppBar(
-        title: const Text(
-          "Confirm Payment",
-          style: TextStyle(
-            color: kWhite,
-            fontSize: 21,
-            fontWeight: FontWeight.w800,
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
-        centerTitle: true,
-        backgroundColor: kBackground,
-        foregroundColor: kWhite,
-        elevation: 0,
-      ),
-
-      // ======================================================
-      // Body
-      // ======================================================
-
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(
-                20,
-                8,
-                20,
-                20,
-              ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 28,
-                ),
-                child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // =================================================
-                      // Wallet Icon
-                      // =================================================
-
-                      Center(
-                        child: Container(
-                          width: 78,
-                          height: 78,
-                          decoration: neumorphicDecoration(
-                            radius: 39,
-                          ),
-                          child: Container(
-                            margin: const EdgeInsets.all(10),
-                            decoration: neumorphicDecoration(
-                              radius: 30,
-                              pressed: true,
-                            ),
-                            child: const Icon(
-                              Icons.account_balance_wallet_outlined,
-                              color: kWhite,
-                              size: 34,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // =================================================
-                      // Heading
-                      // =================================================
-
-                      const Center(
-                        child: Text(
-                          "Confirm Your Payment",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: kWhite,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      const Center(
-                        child: Text(
-                          "Review the details before proceeding",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: kTextGrey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // =================================================
-                      // Paying To
-                      // =================================================
-
-                      const Text(
-                        "Paying To",
-                        style: TextStyle(
-                          color: kWhite,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-
-                      const SizedBox(height: 9),
-
-                      _receiverCard(),
-
-                      const SizedBox(height: 18),
-
-                      // =================================================
-                      // Amount
-                      // =================================================
-
-                      const Text(
-                        "Amount",
-                        style: TextStyle(
-                          color: kTextGrey,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(15),
-                        decoration: neumorphicDecoration(
-                          radius: 17,
-                          pressed: true,
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 43,
-                              height: 43,
-                              decoration: neumorphicDecoration(
-                                radius: 13,
-                              ),
-                              child: const Icon(
-                                Icons.currency_rupee_rounded,
-                                color: kWhite,
-                                size: 21,
-                              ),
-                            ),
-
-                            const SizedBox(width: 13),
-
-                            Expanded(
-                              child: Text(
-                                "₹ $amount",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: kWhite,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // =================================================
-                      // Security Information
-                      // =================================================
-
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(13),
-                        decoration: neumorphicDecoration(
-                          radius: 15,
-                          pressed: true,
-                        ),
-                        child: const Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.security_outlined,
-                              color: kWhite,
-                              size: 20,
-                            ),
-
-                            SizedBox(width: 10),
-
-                            Expanded(
-                              child: Text(
-                                "Please verify the receiver and amount before continuing.",
-                                style: TextStyle(
-                                  color: kTextGrey,
-                                  fontSize: 11,
-                                  height: 1.35,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // This Spacer only uses available extra space.
-                      // SingleChildScrollView prevents overflow.
-                      const Spacer(),
-
-                      const SizedBox(height: 22),
-
-                      // =================================================
-                      // Confirm Button
-                      // =================================================
-
-                      SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    PaymentAuthScreen(
-                                  mobileNumber: mobileNumber,
-                                  amount: amount,
-                                ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: kWhite,
-                            foregroundColor: kDark,
-                            elevation: 0,
-                            padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(17),
-                            ),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Confirm Payment",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-
-                              SizedBox(width: 8),
-
-                              Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 20,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      // =================================================
-                      // Bottom Text
-                      // =================================================
-
-                      const Center(
-                        child: Text(
-                          "🔒 Secure payment with ECpay",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: kTextGrey,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+      ],
     );
   }
 }
