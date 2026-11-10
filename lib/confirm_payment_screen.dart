@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import 'package:payment_app/verify_pin_screen.dart';
 
 class ConfirmPaymentScreen extends StatelessWidget {
   final String personName;
@@ -15,13 +19,15 @@ class ConfirmPaymentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF101510),
+      backgroundColor: Color.fromARGB(255, 12, 202, 12),
 
       appBar: AppBar(
-        title: const Text('Confirm Payment'),
-        backgroundColor: const Color(0xFF101510),
+        title: Text('Confirm Payment', style: GoogleFonts.nunitoSans()),
+        backgroundColor: Color(0xFF101510),
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(42)),
       ),
 
       body: SafeArea(
@@ -37,7 +43,7 @@ class ConfirmPaymentScreen extends StatelessWidget {
               // Recipient Avatar
               const CircleAvatar(
                 radius: 40,
-                backgroundColor: Color(0xFF263B2B),
+                backgroundColor: Color.fromARGB(255, 201, 223, 206),
                 child: Icon(Icons.person, size: 40, color: Color(0xFF35D66F)),
               ),
 
@@ -47,7 +53,7 @@ class ConfirmPaymentScreen extends StatelessWidget {
               Text(
                 personName,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: GoogleFonts.nunitoSans(
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -59,14 +65,20 @@ class ConfirmPaymentScreen extends StatelessWidget {
               // Mobile Number
               Text(
                 mobileNumber,
-                style: const TextStyle(color: Colors.white60, fontSize: 15),
+                style: GoogleFonts.nunitoSans(
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                  fontSize: 15,
+                ),
               ),
 
               const SizedBox(height: 35),
 
-              const Text(
-                'Payment amount',
-                style: TextStyle(color: Colors.white60, fontSize: 16),
+              Text(
+                'Payment Amount',
+                style: GoogleFonts.nunitoSans(
+                  color: Color.fromARGB(255, 255, 255, 255),
+                  fontSize: 18,
+                ),
               ),
 
               const SizedBox(height: 10),
@@ -74,9 +86,9 @@ class ConfirmPaymentScreen extends StatelessWidget {
               // Amount
               Text(
                 '₹$amount',
-                style: const TextStyle(
-                  color: Color(0xFF35D66F),
-                  fontSize: 38,
+                style: GoogleFonts.nunitoSans(
+                  color: Colors.white,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -88,7 +100,7 @@ class ConfirmPaymentScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF202820),
+                  color: const Color.fromRGBO(0, 0, 0, 1),
                   borderRadius: BorderRadius.circular(16),
                 ),
 
@@ -115,10 +127,13 @@ class ConfirmPaymentScreen extends StatelessWidget {
               const SizedBox(height: 30),
 
               // Information
-              const Text(
+              Text(
                 'Review the recipient and amount before proceeding.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white54, fontSize: 12),
+                style: GoogleFonts.nunitoSans(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
               ),
 
               const SizedBox(height: 20),
@@ -130,27 +145,40 @@ class ConfirmPaymentScreen extends StatelessWidget {
 
                 child: ElevatedButton(
                   onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VerifyPinScreen(
+                          receiver: personName,
+                          amount: amount.toString(),
+                        ),
+                      ),
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
                           'Payment backend approval and PIN verification are not connected yet.',
+                          selectionColor: Colors.black,
                         ),
                       ),
                     );
                   },
 
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF35D66F),
-                    foregroundColor: Colors.black,
+                    backgroundColor: const Color.fromARGB(255, 4, 8, 4),
+                    foregroundColor: const Color.fromRGBO(255, 236, 236, 1),
 
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
 
-                  child: const Text(
-                    'Proceed to verification',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: Text(
+                    'Done',
+                    style: GoogleFonts.nunitoSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

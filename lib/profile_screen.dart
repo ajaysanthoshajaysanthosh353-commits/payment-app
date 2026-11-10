@@ -632,11 +632,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           color: kTextGrey,
                         ),
                       )
-                    : const Icon(
-                        Icons.person,
-                        size: 62,
-                        color: kTextGrey,
-                      ),
+                    : const Icon(Icons.person, size: 62, color: kTextGrey),
               ),
             ),
           ),
@@ -992,8 +988,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         ),
         title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 9),
-          decoration: neumorphicDecoration(radius: 25),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: kSurface,
+            borderRadius: BorderRadius.circular(20),
+          ),
+
           child: Text(
             "Profile",
             style: GoogleFonts.nunitoSans(

@@ -1139,10 +1139,6 @@ class _RootScreenState extends State<RootScreen> {
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
-  Future<void> logout() async {
-    await FirebaseAuth.instance.signOut();
-  }
-
   void openScreen(BuildContext context, Widget screen) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
@@ -1159,39 +1155,22 @@ class HomePage extends StatelessWidget {
         ),
         backgroundColor: kCard,
         foregroundColor: kPrimary,
-
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                'assets/ecpay_icon.png',
-                width: 32,
-                height: 32,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const Icon(
-                  CupertinoIcons.paperplane_fill,
-                  color: kPrimary,
-                  size: 24,
-                ),
-              ),
-            ),
-            SizedBox(width: 8),
-            Text(
-              'EcPay',
-              style: GoogleFonts.aDLaMDisplay(
-                color: kPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 23,
-              ),
-            ),
-          ],
-        ),
         centerTitle: true,
-        actions: [
-          IconButton(onPressed: logout, icon: const Icon(Icons.logout_rounded)),
-        ],
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: kSurface,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            'EcPay',
+            style: GoogleFonts.aDLaMDisplay(
+              color: kPrimary,
+              fontWeight: FontWeight.bold,
+              fontSize: 23,
+            ),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18),
@@ -1255,7 +1234,7 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            Text(
+            const Text(
               'Quick Actions',
               style: TextStyle(
                 color: kTextDark,

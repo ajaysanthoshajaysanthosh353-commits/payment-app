@@ -23,8 +23,8 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
   bool isLoading = false;
 
   // Green and black theme
-  static const Color backgroundColor = Color(0xFF101714);
-  static const Color primaryGreen = Color(0xFF00C853);
+  static const Color backgroundColor = Color.fromARGB(255, 12, 202, 12);
+  static const Color primaryGreen = Color.fromARGB(255, 8, 187, 8);
   static const Color cardColor = Color(0xFF1B2520);
   static const Color textColor = Colors.white;
 
@@ -94,14 +94,20 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
       backgroundColor: backgroundColor,
 
       appBar: AppBar(
-        backgroundColor: primaryGreen,
-        foregroundColor: Colors.black,
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        foregroundColor: const Color.fromRGBO(255, 240, 240, 1),
         elevation: 0,
         title: Text(
           'Verify PIN',
-          style: GoogleFonts.abel(fontSize: 24, fontWeight: FontWeight.bold),
+          style: GoogleFonts.nunitoSans(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(42)),
+        ),
       ),
 
       body: SafeArea(
@@ -116,7 +122,7 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
               // Lock icon
               const Icon(
                 CupertinoIcons.lock_fill,
-                color: primaryGreen,
+                color: Color.fromRGBO(204, 255, 204, 1),
                 size: 75,
               ),
 
@@ -128,7 +134,7 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.abel(
                   color: textColor,
-                  fontSize: 28,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -138,7 +144,11 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
               Text(
                 'Enter your 4-digit PIN to verify your payment.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.abel(color: Colors.white70, fontSize: 16),
+                style: GoogleFonts.nunitoSans(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
               const SizedBox(height: 30),
@@ -165,7 +175,7 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'PAYMENT DETAILS',
+                      'Payment Details',
                       style: GoogleFonts.abel(
                         color: primaryGreen,
                         fontSize: 16,
@@ -268,6 +278,7 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
               // PIN label
               Text(
                 '4-Digit PIN',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.abel(
                   color: Colors.white,
                   fontSize: 18,
@@ -363,8 +374,8 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
                           ),
                         )
                       : Text(
-                          'VERIFY PIN',
-                          style: GoogleFonts.abel(
+                          'Done',
+                          style: GoogleFonts.nunitoSans(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.5,
@@ -391,9 +402,9 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
                     child: Text(
                       'Your payment PIN should remain private.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.abel(
-                        color: Colors.white60,
-                        fontSize: 14,
+                      style: GoogleFonts.robotoFlex(
+                        color: Colors.white,
+                        fontSize: 12,
                       ),
                     ),
                   ),
